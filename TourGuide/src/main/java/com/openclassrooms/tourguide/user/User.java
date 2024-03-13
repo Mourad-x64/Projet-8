@@ -1,9 +1,7 @@
 package com.openclassrooms.tourguide.user;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import gpsUtil.location.VisitedLocation;
 import tripPricer.Provider;
@@ -70,9 +68,11 @@ public class User {
 	}
 	
 	public void addUserReward(UserReward userReward) {
-		if(userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
+
+		if(userRewards.stream().noneMatch(r -> r.attraction.attractionName.equals(userReward.attraction.attractionName))) {
 			userRewards.add(userReward);
 		}
+
 	}
 	
 	public List<UserReward> getUserRewards() {
