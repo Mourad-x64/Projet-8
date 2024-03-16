@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
+import jakarta.validation.constraints.Null;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import gpsUtil.GpsUtil;
@@ -42,21 +42,58 @@ public class RewardsService {
 		proximityBuffer = defaultProximityBuffer;
 	}
 	
-	public void calculateRewards(User user) {
-
-		CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
-		List<Attraction> attractions = new CopyOnWriteArrayList<>(gpsUtil.getAttractions());
+	public CompletableFuture<?> calculateRewards(User user){
 
 
-		userLocations.forEach(v -> {
-			attractions.forEach(a -> {
+		 ExecutorService executorService = Executors.newFixedThreadPool(100);
+		 CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
+		 List<Attraction> attractions = new CopyOnWriteArrayList<>(gpsUtil.getAttractions());
+
+		 List<CompletableFuture<?>> futureList = new ArrayList<>();
+		 futureList.add(CompletableFuture.runAsync(() -> {
+
+		 	userLocations.forEach(v -> {
+		 		attractions.forEach(a -> {
+
+		 			if (nearAttraction(v, a)) {
+		 				user.addUserReward(new UserReward(v, a, getRewardPoints(a, user)));
+		 			}
+
+		 		});
+		 });
+
+		 }, executorService));
+
+
+		return CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new));
+
+
+		/**
+		Future<?> future = executorService.submit(() -> {
+
+			CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
+			List<Attraction> attractions = new CopyOnWriteArrayList<>(gpsUtil.getAttractions());
+
+			userLocations.forEach(v -> {
+				attractions.forEach(a -> {
 
 					if (nearAttraction(v, a)) {
 						user.addUserReward(new UserReward(v, a, getRewardPoints(a, user)));
 					}
 
+				});
 			});
+
 		});
+
+		try {
+			future.get();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		}
+		 **/
 
 	}
 	
