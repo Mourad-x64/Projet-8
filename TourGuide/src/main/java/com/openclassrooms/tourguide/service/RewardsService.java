@@ -48,9 +48,10 @@ public class RewardsService {
 		 ExecutorService executorService = Executors.newFixedThreadPool(100);
 		 CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
 		 List<Attraction> attractions = new CopyOnWriteArrayList<>(gpsUtil.getAttractions());
+		 CompletableFuture<?> completableFuture = new CompletableFuture<>();
 
-		 List<CompletableFuture<?>> futureList = new ArrayList<>();
-		 futureList.add(CompletableFuture.runAsync(() -> {
+
+		 completableFuture.runAsync(() -> {
 
 		 	userLocations.forEach(v -> {
 		 		attractions.forEach(a -> {
@@ -60,12 +61,12 @@ public class RewardsService {
 		 			}
 
 		 		});
-		 });
+		 	});
 
-		 }, executorService));
+		 }, executorService);
 
 
-		return CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new));
+		return completableFuture;
 
 
 		/**

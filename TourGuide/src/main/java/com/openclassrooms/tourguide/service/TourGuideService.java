@@ -92,7 +92,7 @@ public class TourGuideService {
 		ExecutorService executorService = Executors.newFixedThreadPool(100);
 
 		/**
-		Future<?> future = service.submit(() -> {
+		Future<VisitedLocation> future = service.submit(() -> {
 			VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
 			user.addToVisitedLocations(visitedLocation);
 			rewardsService.calculateRewards(user);
