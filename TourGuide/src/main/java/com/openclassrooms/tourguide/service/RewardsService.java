@@ -45,13 +45,13 @@ public class RewardsService {
 	public CompletableFuture<?> calculateRewards(User user){
 
 
-		 ExecutorService executorService = Executors.newFixedThreadPool(100);
-		 CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
-		 List<Attraction> attractions = new CopyOnWriteArrayList<>(gpsUtil.getAttractions());
-		 CompletableFuture<?> completableFuture = new CompletableFuture<>();
+		ExecutorService executorService = Executors.newFixedThreadPool(100);
+		CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
+		List<Attraction> attractions = new CopyOnWriteArrayList<>(gpsUtil.getAttractions());
+		List<CompletableFuture<?>> futureList = new ArrayList<>();
 
 
-		 completableFuture.runAsync(() -> {
+		 futureList.add(CompletableFuture.runAsync(() -> {
 
 		 	userLocations.forEach(v -> {
 		 		attractions.forEach(a -> {
@@ -63,10 +63,10 @@ public class RewardsService {
 		 		});
 		 	});
 
-		 }, executorService);
+		 }, executorService));
 
 
-		return completableFuture;
+		return CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new));
 
 
 		/**
