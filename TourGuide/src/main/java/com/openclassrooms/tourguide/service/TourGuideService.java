@@ -30,6 +30,7 @@ public class TourGuideService {
 
 
 
+	private final ExecutorService executorService = Executors.newCachedThreadPool();
 	private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
 	private final GpsUtil gpsUtil;
 	private final RewardsService rewardsService;
@@ -97,8 +98,6 @@ public class TourGuideService {
 	}
 
 	public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
-
-		ExecutorService executorService = Executors.newFixedThreadPool(100);
 
 		return CompletableFuture.supplyAsync(() -> {
 			VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());

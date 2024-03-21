@@ -20,6 +20,8 @@ import com.openclassrooms.tourguide.user.UserReward;
 
 @Service
 public class RewardsService {
+
+	private final ExecutorService executorService = Executors.newCachedThreadPool();
     private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
 
 	// proximity in miles
@@ -54,7 +56,6 @@ public class RewardsService {
 	
 	public CompletableFuture<?> calculateRewards(User user){
 
-		ExecutorService executorService = Executors.newFixedThreadPool(100);
 		CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
 		List<Attraction> attractions = new CopyOnWriteArrayList<>(gpsUtil.getAttractions());
 		List<CompletableFuture<?>> futureList = new ArrayList<>();
