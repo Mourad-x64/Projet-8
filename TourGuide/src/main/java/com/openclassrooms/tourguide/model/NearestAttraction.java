@@ -1,11 +1,7 @@
 package com.openclassrooms.tourguide.model;
 
-import org.springframework.stereotype.Service;
 
-
-
-
-public class FirstFiveAttractions {
+public class NearestAttraction {
 
     public String attrationName;
     public double attractionLatitude;
@@ -15,6 +11,15 @@ public class FirstFiveAttractions {
     public double distanceFromAttraction;
     public int rewardPoints;
 
+    public NearestAttraction(String attrationName, double attractionLatitude, double attractionLongitude, double userLocationLatitude, double userLocationLongitude, double distanceFromAttraction, int rewardPoints) {
+        this.attrationName = attrationName;
+        this.attractionLatitude = attractionLatitude;
+        this.attractionLongitude = attractionLongitude;
+        this.userLocationLatitude = userLocationLatitude;
+        this.userLocationLongitude = userLocationLongitude;
+        this.distanceFromAttraction = distanceFromAttraction;
+        this.rewardPoints = rewardPoints;
+    }
 
     public String getAttrationName() {
         return attrationName;

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import com.openclassrooms.tourguide.model.FirstFiveAttractions;
+import com.openclassrooms.tourguide.model.NearestAttraction;
 import org.junit.jupiter.api.Test;
 
 import gpsUtil.GpsUtil;
@@ -109,7 +109,7 @@ public class TestTourGuideService {
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
 		CompletableFuture<VisitedLocation> visitedLocation = tourGuideService.trackUserLocation(user);
 
-		List<FirstFiveAttractions> attractions = tourGuideService.getNearByAttractions(visitedLocation.join(), user);
+		List<NearestAttraction> attractions = tourGuideService.getNearByAttractions(visitedLocation.join(), user);
 
 		tourGuideService.tracker.stopTracking();
 

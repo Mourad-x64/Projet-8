@@ -41,9 +41,18 @@ public class RewardsService {
 	public void setDefaultProximityBuffer() {
 		proximityBuffer = defaultProximityBuffer;
 	}
+
+	public void calculateRewardsMultipleUsers(List<User> users){
+
+		CompletableFuture<?>[] completableFutures = users.stream().parallel()
+				.map(u -> calculateRewards(u))
+				.toArray(CompletableFuture[]::new);
+
+		CompletableFuture.allOf(completableFutures).join();
+
+	}
 	
 	public CompletableFuture<?> calculateRewards(User user){
-
 
 		ExecutorService executorService = Executors.newFixedThreadPool(100);
 		CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
@@ -67,34 +76,6 @@ public class RewardsService {
 
 
 		return CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new));
-
-
-		/**
-		Future<?> future = executorService.submit(() -> {
-
-			CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
-			List<Attraction> attractions = new CopyOnWriteArrayList<>(gpsUtil.getAttractions());
-
-			userLocations.forEach(v -> {
-				attractions.forEach(a -> {
-
-					if (nearAttraction(v, a)) {
-						user.addUserReward(new UserReward(v, a, getRewardPoints(a, user)));
-					}
-
-				});
-			});
-
-		});
-
-		try {
-			future.get();
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		}
-		 **/
 
 	}
 	

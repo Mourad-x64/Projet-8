@@ -1,7 +1,7 @@
 package com.openclassrooms.tourguide.service;
 
 import com.openclassrooms.tourguide.helper.InternalTestHelper;
-import com.openclassrooms.tourguide.model.FirstFiveAttractions;
+import com.openclassrooms.tourguide.model.NearestAttraction;
 import com.openclassrooms.tourguide.tracker.Tracker;
 import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
@@ -86,44 +86,32 @@ public class TourGuideService {
 		return providers;
 	}
 
-	public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
+	public void trackUserLocationMultipleUsers(List<User> users) {
 
+		CompletableFuture<?>[] completableFutures = users.stream().parallel()
+				.map(u -> trackUserLocation(u))
+				.toArray(CompletableFuture[]::new);
+
+		CompletableFuture.allOf(completableFutures).join();
+
+	}
+
+	public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
 
 		ExecutorService executorService = Executors.newFixedThreadPool(100);
 
-		/**
-		Future<VisitedLocation> future = service.submit(() -> {
-			VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
-			user.addToVisitedLocations(visitedLocation);
-			rewardsService.calculateRewards(user);
-			return visitedLocation;
-		});
-
-
-		try {
-			future.get();
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		}
-		 **/
-
-
-		CompletableFuture<VisitedLocation> completableFuture = CompletableFuture.supplyAsync(() -> {
+		return CompletableFuture.supplyAsync(() -> {
 			VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
 			user.addToVisitedLocations(visitedLocation);
 			rewardsService.calculateRewards(user).join();
 			return visitedLocation;
 		}, executorService);
 
-		return completableFuture;
-
 	}
 
-	public List<FirstFiveAttractions> getNearByAttractions(VisitedLocation visitedLocation, User user) {
+	public List<NearestAttraction> getNearByAttractions(VisitedLocation visitedLocation, User user) {
 
-		List<FirstFiveAttractions> firstFiveAttractions = new ArrayList<>();
+
 		List<Attraction> attractions = gpsUtil.getAttractions();
 
 		attractions.sort((a1, a2) -> {
@@ -140,24 +128,15 @@ public class TourGuideService {
 
 		});
 
-		attractions.forEach(a -> {
-			System.out.println(a.attractionName);
-			System.out.println(rewardsService.getDistance(visitedLocation.location, a));
-		});
-
-		for(int i = 0; i < 5; i++){
-			FirstFiveAttractions attraction = new FirstFiveAttractions();
-			attraction.setAttrationName(attractions.get(i).attractionName);
-			attraction.setAttractionLatitude(attractions.get(i).latitude);
-			attraction.setAttractionLongitude(attractions.get(i).longitude);
-			attraction.setUserLocationLatitude(visitedLocation.location.latitude);
-			attraction.setUserLocationLongitude(visitedLocation.location.longitude);
-			attraction.setDistanceFromAttraction(rewardsService.getDistance(visitedLocation.location, attractions.get(i)));
-			attraction.setRewardPoints(rewardsService.getRewardPoints(attractions.get(i), user));
-			firstFiveAttractions.add(attraction);
-		}
-
-		return firstFiveAttractions;
+		return attractions.subList(0,5).stream().map(a -> new NearestAttraction(
+				a.attractionName,
+				a.latitude,
+				a.longitude,
+				visitedLocation.location.latitude,
+				visitedLocation.location.longitude,
+				rewardsService.getDistance(visitedLocation.location, a),
+				rewardsService.getRewardPoints(a, user)
+				)).collect(Collectors.toList());
 	}
 
 	private void addShutDownHook() {
