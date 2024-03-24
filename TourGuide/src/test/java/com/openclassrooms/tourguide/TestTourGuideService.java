@@ -3,11 +3,15 @@ package com.openclassrooms.tourguide;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import com.openclassrooms.tourguide.model.NearestAttraction;
+import gpsUtil.location.Attraction;
+import gpsUtil.location.Location;
 import org.junit.jupiter.api.Test;
 
 import gpsUtil.GpsUtil;
@@ -102,18 +106,51 @@ public class TestTourGuideService {
 	public void getNearbyAttractions() {
 		GpsUtil gpsUtil = new GpsUtil();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
+		List<Attraction> allAttractions = gpsUtil.getAttractions();
+		List<NearestAttraction> fiveNearestAttractions = new ArrayList<>();
 
 		InternalTestHelper.setInternalUserNumber(0);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		CompletableFuture<VisitedLocation> visitedLocation = tourGuideService.trackUserLocation(user);
+		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user).join();
 
-		List<NearestAttraction> attractions = tourGuideService.getNearByAttractions(visitedLocation.join(), user);
+		List<NearestAttraction> attractions = tourGuideService.getNearByAttractions(visitedLocation, user);
+
+		allAttractions.sort((a1, a2) -> {
+
+			double distance = rewardsService.getDistance(visitedLocation.location, new Location(a1.latitude, a1.longitude)) - rewardsService.getDistance(visitedLocation.location, new Location(a2.latitude, a2.longitude));
+
+			if(distance > 0){
+				return 1;
+			} else if (distance  < 0) {
+				return -1;
+			}else{
+				return 0;
+			}
+
+		});
+
+		fiveNearestAttractions = allAttractions.subList(0,5).stream().map(a -> new NearestAttraction(
+				a.attractionName,
+				a.latitude,
+				a.longitude,
+				visitedLocation.location.latitude,
+				visitedLocation.location.longitude,
+				rewardsService.getDistance(visitedLocation.location, a),
+				rewardsService.getRewardPoints(a, user)
+		)).collect(Collectors.toList());
+
+		for(int i = 0; i < fiveNearestAttractions.size(); i++){
+			assertEquals(fiveNearestAttractions.get(i).attrationName, attractions.get(i).attrationName);
+			assertEquals(fiveNearestAttractions.get(i).distanceFromAttraction, attractions.get(i).distanceFromAttraction);
+		}
 
 		tourGuideService.tracker.stopTracking();
 
+
 		assertEquals(5, attractions.size());
+
 	}
 
 	public void getTripDeals() {
