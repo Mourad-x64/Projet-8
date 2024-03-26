@@ -117,6 +117,8 @@ public class TestTourGuideService {
 
 		List<NearestAttraction> attractions = tourGuideService.getNearByAttractions(visitedLocation, user);
 
+		assertEquals(5, attractions.size());
+
 		allAttractions.sort((a1, a2) -> {
 
 			double distance = rewardsService.getDistance(visitedLocation.location, new Location(a1.latitude, a1.longitude)) - rewardsService.getDistance(visitedLocation.location, new Location(a2.latitude, a2.longitude));
@@ -147,9 +149,6 @@ public class TestTourGuideService {
 		}
 
 		tourGuideService.tracker.stopTracking();
-
-
-		assertEquals(5, attractions.size());
 
 	}
 
