@@ -43,7 +43,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-    - run: mvn --batch-mode --update-snapshots verify
+    - run: mvn --batch-mode --update-snapshots verify --file TourGuide/pom.xml
     - run: mkdir staging && cp TourGuide/target/*.jar staging
     - uses: actions/upload-artifact@v3
       with:
