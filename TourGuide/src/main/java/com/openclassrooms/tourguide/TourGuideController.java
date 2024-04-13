@@ -35,7 +35,7 @@ public class TourGuideController {
     
     //  TODO: Change this method to no longer return a List of Attractions.
  	//  Instead: Get the closest five tourist attractions to the user - no matter how far away they are.
- 	//  Return a new JSON object that contains:
+ 	//  Return a new JSON object that contains :
     	// Name of Tourist attraction, 
         // Tourist attractions lat/long, 
         // The user's location lat/long, 

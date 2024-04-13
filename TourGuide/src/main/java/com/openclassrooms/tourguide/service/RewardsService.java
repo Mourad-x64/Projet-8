@@ -44,6 +44,7 @@ public class RewardsService {
 		proximityBuffer = defaultProximityBuffer;
 	}
 
+
 	public void calculateRewardsMultipleUsers(List<User> users){
 
 		CompletableFuture<?>[] completableFutures = users.stream().parallel()
@@ -53,11 +54,12 @@ public class RewardsService {
 		CompletableFuture.allOf(completableFutures).join();
 
 	}
+
 	
 	public CompletableFuture<?> calculateRewards(User user){
 
 		CopyOnWriteArrayList<VisitedLocation> userLocations = new CopyOnWriteArrayList<>(user.getVisitedLocations());
-		List<Attraction> attractions = new CopyOnWriteArrayList<>(gpsUtil.getAttractions());
+		List<Attraction> attractions = new ArrayList<>(gpsUtil.getAttractions());
 		List<CompletableFuture<?>> futureList = new ArrayList<>();
 
 

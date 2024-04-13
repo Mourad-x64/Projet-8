@@ -128,14 +128,6 @@ public class TourGuideService {
 
 		});
 
-		/*
-		attractions.forEach(a -> {
-			System.out.println(a.attractionName);
-			System.out.println(rewardsService.getDistance(visitedLocation.location, a));
-		});
-		*/
-
-
 		return attractions.subList(0,5).stream().map(a -> new NearestAttraction(
 				a.attractionName,
 				a.latitude,
